@@ -1,0 +1,23 @@
+# DD2gether 本體：授權禁止再散佈且體積大，請自行從 GitHub 下載（或由腳本自動更新）
+DD2gether*/
+
+# 自動更新的暫存資料夾與下載檔
+_dd2gether_update/
+*.zip
+
+# 存檔備份（個人資料）
+DD2_Save_*/
+Backups/
+
+# 本機設定（含本機路徑），由 Play_DD2_With_Backup.bat 自動建立
+config.ini
+
+# Python
+__pycache__/
+*.pyc
+
+# 作業系統 / 編輯器
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
