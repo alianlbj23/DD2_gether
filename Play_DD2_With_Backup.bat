@@ -27,6 +27,35 @@ REM DD2gether executable is loaded from config.ini
 set "DD2GETHER_EXE="
 set "AUTO_UPDATE=1"
 
+REM ==================================================
+REM FIND PYTHON (py launcher, or python on PATH)
+REM ==================================================
+
+set "PYTHON="
+where py >nul 2>nul && set "PYTHON=py"
+if not defined PYTHON where python >nul 2>nul && set "PYTHON=python"
+
+if not defined PYTHON (
+    echo.
+    echo ERROR: Python was not found.
+    echo.
+    echo Please install Python 3 from https://www.python.org/downloads/
+    echo and make sure "py launcher" or "Add python.exe to PATH" is checked.
+    goto END_WAIT
+)
+
+%PYTHON% -c "import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)" >nul 2>nul
+if errorlevel 1 (
+    echo.
+    echo ERROR: "%PYTHON%" is not a working Python 3.8+ interpreter.
+    echo.
+    echo If Windows opened the Microsoft Store, install Python from
+    echo https://www.python.org/downloads/ instead and re-run this script.
+    goto END_WAIT
+)
+
+set "PY=%PYTHON% -X utf8 -u"
+
 if not exist "%CONFIG_FILE%" (
     echo.
     echo config.ini not found. Creating portable default settings...
@@ -97,7 +126,7 @@ if not errorlevel 1 (
     goto UPDATE_DONE
 )
 
-py -X utf8 -u "%UPDATE_SCRIPT%"
+%PY% "%UPDATE_SCRIPT%"
 
 if errorlevel 1 (
     echo.
@@ -133,7 +162,7 @@ echo BACKUP BEFORE GAME
 echo ==========================================
 echo.
 
-py -X utf8 -u "%BACKUP_SCRIPT%"
+%PY% "%BACKUP_SCRIPT%"
 
 if errorlevel 1 (
     echo.
@@ -215,7 +244,7 @@ echo BACKUP AFTER GAME
 echo ==========================================
 echo.
 
-py -X utf8 -u "%BACKUP_SCRIPT%"
+%PY% "%BACKUP_SCRIPT%"
 
 if errorlevel 1 (
     echo.
@@ -248,7 +277,7 @@ echo Checking the latest save one more time...
 timeout /t 2 /nobreak >nul
 echo.
 
-py -X utf8 -u "%BACKUP_SCRIPT%"
+%PY% "%BACKUP_SCRIPT%"
 
 if errorlevel 1 (
     echo.
@@ -311,7 +340,7 @@ if not exist "%UPDATE_SCRIPT%" (
     exit /b 1
 )
 
-py -X utf8 -u "%UPDATE_SCRIPT%"
+%PY% "%UPDATE_SCRIPT%"
 
 if errorlevel 1 (
     echo.
@@ -345,6 +374,10 @@ if not defined FOUND_DD2GETHER (
 >>"%CONFIG_FILE%" echo.
 >>"%CONFIG_FILE%" echo # Backup output folder
 >>"%CONFIG_FILE%" echo backup_output_path=Backups
+>>"%CONFIG_FILE%" echo.
+>>"%CONFIG_FILE%" echo # Save folder. Leave empty to auto-detect from Steam userdata.
+>>"%CONFIG_FILE%" echo # Example: C:\Program Files (x86)\Steam\userdata\^<account id^>\2054970\remote\win64_save
+>>"%CONFIG_FILE%" echo save_path=
 >>"%CONFIG_FILE%" echo.
 >>"%CONFIG_FILE%" echo # Auto-update DD2gether from GitHub before launch (1=on, 0=off)
 >>"%CONFIG_FILE%" echo auto_update=1

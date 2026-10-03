@@ -21,15 +21,12 @@
 ## 安裝
 
 1. 下載或 `git clone` 本專案到任意資料夾。
-2. 打開 `DD2_Backup.py`，將 `SOURCE_FOLDER` 改成你自己的存檔路徑：
-
-   ```
-   C:\Program Files (x86)\Steam\userdata\<你的 Steam ID>\2054970\remote\win64_save
-   ```
-
-3. 執行 `Play_DD2_With_Backup.bat`。第一次執行會：
+2. 執行 `Play_DD2_With_Backup.bat`。第一次執行會：
    - 找不到 DD2gether 時，自動從 GitHub 下載最新版並解壓到 `DD2gether-alpha-<版本>` 資料夾
    - 自動建立 `config.ini`
+   - 自動從 Steam 找出你的 DD2 存檔資料夾（不需要手動填 Steam ID）
+
+   不需要修改任何程式碼。
 
    若你已經有手動下載好的 DD2gether，直接解壓到本專案資料夾底下的任何子資料夾即可，
    腳本會自動找到 `DD2gether.exe` 並沿用，不會重複下載。
@@ -56,6 +53,10 @@ dd2gether_path=DD2gether-alpha-0.32.1\DD2gether.exe
 # 存檔備份的輸出資料夾
 backup_output_path=Backups
 
+# 存檔資料夾。留空時自動從 Steam userdata 偵測
+# 範例：C:\Program Files (x86)\Steam\userdata\<帳號ID>\2054970\remote\win64_save
+save_path=
+
 # 啟動前自動從 GitHub 檢查並更新 DD2gether（1=開啟，0=關閉）
 auto_update=1
 
@@ -67,6 +68,7 @@ dd2gether_repo=But-Frog/dd2-together-release
 | --- | --- |
 | `dd2gether_path` | `DD2gether.exe` 的路徑，自動更新後會由腳本改寫成新版路徑 |
 | `backup_output_path` | 存檔備份的輸出資料夾，相對路徑以本專案資料夾為基準 |
+| `save_path` | 存檔資料夾。留空自動偵測；偵測不到或想指定別的帳號時才需要填 |
 | `auto_update` | `1` 開啟自動更新，`0` 關閉 |
 | `dd2gether_repo` | GitHub 倉庫，一般不需要改 |
 
@@ -85,13 +87,27 @@ py -X utf8 DD2gether_Update.py --check-only   # 只比對版本
 py -X utf8 DD2gether_Update.py                # 檢查並更新
 ```
 
+## 存檔資料夾自動偵測
+
+`DD2_Backup.py` 會依序：
+
+1. 若 `config.ini` 有填 `save_path`，直接使用。
+2. 從登錄檔（`HKCU\Software\Valve\Steam\SteamPath`、`HKLM\...\Valve\Steam\InstallPath`）
+   與常見路徑找出 Steam 安裝位置。
+3. 掃描 `Steam\userdata\<帳號ID>\2054970\remote\win64_save`。
+   - 只有一個帳號：直接使用。
+   - 多個帳號：優先用 `config\loginusers.vdf` 中最近登入的帳號，其次用最近修改的。
+4. 都找不到時會列出搜尋過的位置，並提示在 `config.ini` 填 `save_path`。
+
+Python 方面，bat 會自動尋找 `py` 啟動器或 PATH 上的 `python`，兩者皆可。
+
 ## 檔案說明
 
 | 檔案 | 說明 |
 | --- | --- |
 | `Play_DD2_With_Backup.bat` | 主程式，串起更新、備份、啟動與等待流程 |
 | `DD2gether_Update.py` | DD2gether 自動更新腳本 |
-| `DD2_Backup.py` | 存檔備份腳本（比對內容、保留最多 20 份） |
+| `DD2_Backup.py` | 存檔備份腳本（自動偵測存檔位置、比對內容、保留最多 20 份） |
 | `config.ini` | 本機設定，自動產生，不納入版控 |
 
 ## 注意事項
